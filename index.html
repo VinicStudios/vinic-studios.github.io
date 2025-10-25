@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="Icon.png" type="image/png" />
+<title>Vinic's Code Access</title>
+<audio id="successSound" src="success.mp3" preload="auto"></audio>
+<audio id="errorSound" src="error.mp3" preload="auto"></audio>
+<audio id="slowSound" src="youretooslow.mp3" preload="auto"></audio>
+<audio id="sega" src="sega.mp3" preload="auto"></audio>
+
+<style>
+  @font-face {
+    font-family: 'Sonic';
+    src: url('Sonic.ttf') format('truetype');
+  }
+
+  @font-face {
+    font-family: 'Sonic Title';
+    src: url('Sonic-Title.ttf') format('truetype');
+  }
+
+  #custom-cursor {
+      position: fixed;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+  background: url('SonicCursor.gif') no-repeat center center;
+  background-size: contain;
+  /* centraliza no mouse, mas ajusta Y para baixo */
+  transform: translate(-30%, calc(-30% + 6px)); /* aqui 6px é exemplo */
+  z-index: 9999;
+  }
+
+  body {
+    cursor: url('white-custom.cur'), auto;
+    font-family: Arial, sans-serif;
+    background: #f0f4f8;
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 0px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 320px;
+  }
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #2196f3;
+    box-shadow: 0 0 15px rgba(33, 150, 243, 0.5);
+    margin-bottom: 20px;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+  h2 {
+    color: #333;
+    margin-bottom: 25px;
+    font-weight: normal;
+    font-family: 'Sonic', Arial, sans-serif;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 0px;
+    outline: none; /* Remove outline */
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+    cursor: url('white-custom-text.cur'), auto;
+  }
+  input[type="text"]:focus {
+    border-color: #2196f3;
+    outline: none; /* Remove outline on focus */
+    box-shadow: 0 0 4px #2196f3;
+  }
+  button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 0px;
+    background-color: #2196f3;
+    color: white;
+    cursor: url('white-custom-hover.cur'), auto;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #1B78C2;
+  }
+  .error-message {
+    margin-top: 20px;
+    color: #e53935;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .error-message.show {
+    opacity: 1;
+  }
+
+ .sonic-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    width: 60px; /* ajuste se quiser maior ou menor */
+    max-width: 30vw;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+.tails-fly {
+    position: fixed;
+    top: 20vh;                 /* altura inicial — ajuste conforme quiser */
+    left: -30%;                /* começa fora da tela à esquerda */
+    width: 50px;              /* tamanho do GIF (ajuste) */
+    height: auto;
+    pointer-events: none;      /* não bloqueia cliques */
+    z-index: 0;
+    transform: translateZ(0);  /* melhora performance em alguns browsers */
+    animation: tails-move 10s linear infinite;
+    opacity: 0.95;
+  }
+
+  @keyframes tails-move {
+    0%   { left: -30%; transform: translateY(0) scale(1); }
+    50%  { left: 55%; transform: translateY(-6px) scale(1.03); } /* leve voo para cima */
+    100% { left: 130%; transform: translateY(0) scale(1); }      /* sai à direita */
+  }
+
+  /* esconder em telas pequenas para não atrapalhar layout/performance */
+  @media (max-width: 600px) {
+    .tails-fly { display: none; }
+  }
+
+  /* garanta que seu card fique por cima */
+  .card { position: relative; z-index: 10; }
+</style>
+</head>
+<body>
+<img src="Sonic.gif" alt="Sonic" class="sonic-bottom">
+
+<div class="card">
+  <img src="VinicStudios.png" alt="Avatar" class="avatar" />
+  <h2>Enter Vinic's secret code to access a page.</h2>
+
+  <form id="codeForm" autocomplete="off">
+    <input type="text" id="codeInput" placeholder="Enter The Secret Code Here." required />
+    <button type="submit">Submit</button>
+  </form>
+
+</div>
+<img src="Tails.gif" alt="Tails flying" class="tails-fly" aria-hidden="true" />
+ <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const avatar = document.getElementById('avatarImage');
+  if (avatar) {
+    avatar.addEventListener('contextmenu', e => e.preventDefault());
+  }
+
+  const form = document.getElementById('codeForm');
+  const input = document.getElementById('codeInput');
+  const successSound = document.getElementById('successSound');
+  const errorSound = document.getElementById('errorSound');
+  const slowSound = document.getElementById('slowSound'); // novo som
+  const subtitle = document.querySelector('h2');
+
+  const originalText = subtitle.textContent;
+  const originalColor = window.getComputedStyle(subtitle).color;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const code = input.value.trim();
+
+    if (code === 'vin1c-scrt0593') {
+      subtitle.textContent = 'Great job, this code is correct!';
+      subtitle.style.color = '#4caf50'; // verde
+
+      successSound.play();
+      successSound.onended = () => {
+        window.location.href = 'secret.html';
+      };
+
+    } else if (code.toLowerCase() === 'secret:youretooslow') {
+      subtitle.textContent = "You're too slow!";
+      subtitle.style.color = '#2196f3'; // azul
+
+      slowSound.play();
+      slowSound.onended = () => {
+        subtitle.textContent = originalText;
+        subtitle.style.color = originalColor;
+      };
+
+ } else if (code.toLowerCase() === 's0n1c-fangame_byvinic') {
+      subtitle.textContent = "This is a sonic fan-game page, i hope you like it!! ;D";
+      subtitle.style.color = '#2196f3'; // azul
+
+      successSound.play();
+      successSound.onended = () => {
+        window.location.href = 'sonic-fangame.html';
+      };
+
+    } else {
+      subtitle.textContent = "Oops, that's not the code! Try again next time.";
+      subtitle.style.color = '#e53935'; // vermelho
+
+      errorSound.play();
+      errorSound.onended = () => {
+        subtitle.textContent = originalText;
+        subtitle.style.color = originalColor;
+      };
+    }
+  });
+});
+
+</script>
+</body>
+</html>
